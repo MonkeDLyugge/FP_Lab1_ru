@@ -1,25 +1,52 @@
-// Print a table of a given function f, computed by taylor series
+//v14
+let a = 0.1
+let b = 0.6
+let n = 10.
+let eps = 0.0001
 
-// function to compute
-let f = sin
+let rec loop i n func x =
+  if i <= n then
+    let x = func x
+    loop (i + 1.) n func x
+  else
+    x
+    
+let m a b = a * b
 
-let a = 0.0
-let b = 1.0
-let n = 10
+let pow x n = loop 1. n (m x) x
 
-// Define a function to compute f using naive taylor series method
-let taylor_naive = f
+let f x = (x * 2. - 3.) / ((x - 1.) ** 2.)
+
+let rec dumbTaylor x i eps sum = 
+  let cur = (i + 3.) * x ** i
+  if (abs(cur) < eps) then
+    (-sum, i)
+  else
+    let sum = sum + cur
+    dumbTaylor x (i + 1.) eps sum
 
 
-// Define a function to do the same in a more efficient way
-let taylor = f
+let rec smartTaylor x last i eps sum =
+  let cur = last * x + x ** ((i - 1.) / 2. + 1.)
+  if (abs(cur) < eps) then
+    (-sum, (i - 1.) / 2. + 1.)
+  else
+    let sum = sum + cur
+    smartTaylor x cur (i + 2.) eps sum
+
+let determine i = 
+  let x = a + i / n * (b - a)
+  let dT, dTi = dumbTaylor x 0. eps 0.
+  let sT, sTi = smartTaylor x 3. 1. eps 3.
+  printfn "|%5.2f|  %10.6f|  %10.6f|   %10.0f|  %10.6f|   %10.0f|" x (f x) dT dTi sT sTi
+  i + 1.
+
 
 let main =
-   for i=0 to n do
-     let x = a+(float i)/(float n)*(b-a)
-     printfn "%5.2f  %10.6f  %10.6f   %10.6f" x (f x) (taylor_naive x) (taylor x)
-// make sure to improve this table to include the required number of iterations
-// for each of the methods
+    printfn "--------------------------------------------------------------------------"
+    printfn "|  x  |    f(x)    |   Naive    |    Iters    |   Smart    |    Iters    |"
+    printfn "--------------------------------------------------------------------------"
+    loop 0. n determine 0.
+    printfn "--------------------------------------------------------------------------"
 
 main
-
